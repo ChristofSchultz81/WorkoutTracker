@@ -9,7 +9,7 @@ import io
 # 1. Nextcloud Konfiguration & WebDAV-Funktionen
 # -----------------------------------------------------------------------------
 # Falls in der Streamlit Cloud, nutzen wir Secrets. Lokal tragen wir es unten ein.
-NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz")
+NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz/WorkoutTracker")
 NC_USER = st.secrets.get("NC_USER", "schultz")
 NC_PASS = st.secrets.get("NC_PASS", "yjP2M-XYP2E-MNcDM-gMsAK-jeYdC")
 
