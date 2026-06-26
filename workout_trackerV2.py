@@ -8,10 +8,9 @@ import io
 # -----------------------------------------------------------------------------
 # 1. Nextcloud Konfiguration & WebDAV-Funktionen
 # -----------------------------------------------------------------------------
-# Falls in der Streamlit Cloud, nutzen wir Secrets. Lokal tragen wir es unten ein.
-NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz/WorkoutTracker")
-NC_USER = st.secrets.get("NC_USER", "schultz")
-NC_PASS = st.secrets.get("NC_PASS", "yjP2M-XYP2E-MNcDM-gMsAK-jeYdC")
+NC_URL = st.secrets.get("NC_URL", "DEINE_WEBDAV_ORDNER_URL_HIER")
+NC_USER = st.secrets.get("NC_USER", "DEIN_NEXTCLOUD_BENUTZERNAME")
+NC_PASS = st.secrets.get("NC_PASS", "DEIN_NEXTCLOUD_APP_PASSWORT")
 
 def load_csv_from_nextcloud(filename, default_columns):
     """Lädt eine CSV-Datei aus Nextcloud. Erstellt sie, falls nicht vorhanden."""
@@ -25,6 +24,9 @@ def load_csv_from_nextcloud(filename, default_columns):
             df = pd.DataFrame(columns=default_columns)
             save_csv_to_nextcloud(filename, df)
             return df
+        else:
+            st.error(f"⚠️ Nextcloud Ladefehler für '{filename}': Status-Code {response.status_code}")
+            st.info("Bitte überprüfe deine Secrets (URL, Benutzername und App-Passwort).")
     except Exception as e:
         st.error(f"Fehler beim Laden von {filename} aus Nextcloud: {e}")
     return pd.DataFrame(columns=default_columns)
@@ -36,16 +38,20 @@ def save_csv_to_nextcloud(filename, df):
     df.to_csv(csv_buffer, index=False)
     try:
         response = requests.put(url, data=csv_buffer.getvalue().encode('utf-8'), auth=(NC_USER, NC_PASS))
-        if response.status_code in [201, 204]:
+        # Manche Nextcloud-Server antworten mit 200, andere mit 201 oder 204
+        if response.status_code in [200, 201, 204]:
             return True
+        else:
+            st.error(f"❌ Nextcloud Speicherfehler: Server antwortete mit Code {response.status_code}")
+            st.info("Prüfe bitte, ob der Ordner (z.B. 'WorkoutTracker') wirklich exakt so in deiner Nextcloud existiert.")
+            return False
     except Exception as e:
         st.error(f"Fehler beim Speichern in Nextcloud: {e}")
-    return False
+        return False
 
 # -----------------------------------------------------------------------------
 # 2. Daten laden
 # -----------------------------------------------------------------------------
-# Laden/Initialisieren der beiden benötigten Tabellen
 df_exercises = load_csv_from_nextcloud("exercises.csv", ["Exercise"])
 df_logs = load_csv_from_nextcloud("logs.csv", [
     "Date", "Exercise", 
@@ -74,7 +80,6 @@ with col1:
         if len(exercises) >= 10:
             st.error("Du hast bereits das Limit von 10 Übungen erreicht!")
         elif new_exercise and new_exercise not in exercises:
-            # Zeile an den Übungs-DataFrame anhängen und hochladen
             new_row = pd.DataFrame([{"Exercise": new_exercise}])
             df_exercises = pd.concat([df_exercises, new_row], ignore_index=True)
             if save_csv_to_nextcloud("exercises.csv", df_exercises):
@@ -102,7 +107,7 @@ with col2:
             
         with sat_col2:
             st.caption("⚡ **Satz 2**")
-            s2_reps = min_value=0, st.number_input("Wdh. (Satz 2)", min_value=0, step=1, key="s2_r")
+            s2_reps = st.number_input("Wdh. (Satz 2)", min_value=0, step=1, key="s2_r")
             s2_weight = st.number_input("Gewicht 2 (kg)", min_value=0.0, step=0.5, key="s2_w")
             
         with sat_col3:
@@ -112,9 +117,8 @@ with col2:
 
         st.write("---")
         if st.button("Trainingseinheit speichern"):
-            total_reps = s1_reps + s2_reps + s3_reps
+            total_reps = int(s1_reps) + int(s2_reps) + int(s3_reps)
             
-            # Neue Zeile für das Log-Buch bauen
             new_log = pd.DataFrame([{
                 "Date": str(log_date),
                 "Exercise": selected_ex,
@@ -139,7 +143,6 @@ st.divider()
 st.subheader("📈 Dein Trainingsfortschritt")
 
 if not df_logs.empty:
-    # Daten für Plotly vorbereiten
     df_plot = df_logs.copy()
     df_plot["Date"] = pd.to_datetime(df_plot["Date"]).dt.date
     df_plot["Total_Reps"] = pd.to_numeric(df_plot["Total_Reps"])
