@@ -8,7 +8,7 @@ import io
 # -----------------------------------------------------------------------------
 # 1. Nextcloud Konfiguration & WebDAV-Funktionen
 # -----------------------------------------------------------------------------
-NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz/WorkoutTracker/")
+NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz/HTW%20online/WorkoutTracker/")
 NC_USER = st.secrets.get("NC_USER", "schultz")
 NC_PASS = st.secrets.get("NC_PASS", "9MxWz-nmz8a-ESY8A-BMni7-d8b4Q")
 
