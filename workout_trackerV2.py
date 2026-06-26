@@ -8,9 +8,9 @@ import io
 # -----------------------------------------------------------------------------
 # 1. Nextcloud Konfiguration & WebDAV-Funktionen
 # -----------------------------------------------------------------------------
-NC_URL = st.secrets.get("NC_URL", "DEINE_WEBDAV_ORDNER_URL_HIER")
-NC_USER = st.secrets.get("NC_USER", "DEIN_NEXTCLOUD_BENUTZERNAME")
-NC_PASS = st.secrets.get("NC_PASS", "DEIN_NEXTCLOUD_APP_PASSWORT")
+NC_URL = st.secrets.get("NC_URL", "https://cloud.htw-berlin.de/remote.php/dav/files/schultz/WorkoutTracker/")
+NC_USER = st.secrets.get("NC_USER", "schultz")
+NC_PASS = st.secrets.get("NC_PASS", "9MxWz-nmz8a-ESY8A-BMni7-d8b4Q")
 
 def load_csv_from_nextcloud(filename, default_columns):
     """Lädt eine CSV-Datei aus Nextcloud. Erstellt sie, falls nicht vorhanden."""
